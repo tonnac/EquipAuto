@@ -1,0 +1,13 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{2CB94E46-4A11-A2BC-B524-35B51AF017A9}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "EquipAuto",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
