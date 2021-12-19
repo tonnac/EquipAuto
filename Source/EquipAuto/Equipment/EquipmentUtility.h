@@ -11,6 +11,7 @@ public:
 	static UWorld* GameWorld;
 	static FIntPoint GetBoardSize();
 	static int32 GetBoardCount();
+	static int32 GetCanEquipPosition(uint64 SourceValue, uint64 ShapeValue, const FIntPoint& BoardSize = GetBoardSize());
 	
 	static constexpr int32 MaxBoardRow = 8;
 	static constexpr int32 MaxBoardColumn = 8;

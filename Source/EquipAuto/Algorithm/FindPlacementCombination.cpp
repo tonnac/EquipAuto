@@ -13,37 +13,30 @@ TArray<UEquipmentBoard*> FFindPlacementCombination::FindCombination(int32 PoolNu
 	
 	PoolNumber = FMath::Clamp(PoolNumber, 1, FEquipmentShapePool::ShapePool.Num());
 	ShapePools.Append(FEquipmentShapePool::ShapePool.GetData(), PoolNumber);
-	const UEquipAutoInstance* GameInstance = FEquipmentUtility::GetGameInstance();
+	UEquipmentBoard* EquipmentBoard = NewObject<UEquipmentBoard>(FEquipmentUtility::GameWorld,
+	                                                             UEquipmentBoard::StaticClass());
+	EquipmentBoard->Init();
 
-	uint64 Default = 0;
-
-	TArray<UEquipmentBoard*> Boards;
-
-	for (int32 i = 0; i < ShapePools.Num(); ++i)
+	while (!EquipmentBoard->IsMaxBoard())
 	{
-		const uint64 Value = ShapePools[i];
-		const uint64 DefaultValue = GameInstance->GetDefaultBoardValue();
-
-		const FIntPoint BoardSize = FEquipmentUtility::GetBoardSize();
-		for (int32 j = 0; j < BoardSize.X * BoardSize.Y; ++j)
+		for (int32 i = 0; i < ShapePools.Num(); ++i)
 		{
-			const int32 Position = j / BoardSize.X * 8 + j % BoardSize.X;
-			const uint64 MovedShapeValue = Value >> Position;
-
-			if ((Default & MovedShapeValue) == 0 && (~DefaultValue & MovedShapeValue) == MovedShapeValue)
+			const uint64 ShapeValue = ShapePools[i];
+			TArray<TSharedPtr<FEquipment, ESPMode::Fast>> Equipments = *FEquipmentUtility::GetGameInstance()->
+			GetEquipments(ShapePools[i]);
+			if (const int32 Position = EquipmentBoard->CanEquip(ShapeValue); Position != FEquipmentUtility::InvalidPosition)
 			{
-				TMap<uint64, TSet<int32>> Pos;
-				auto EquipmentBoard = NewObject<UEquipmentBoard>(FEquipmentUtility::GameWorld, UEquipmentBoard::StaticClass());
-				Pos.Emplace(MovedShapeValue);
-				EquipmentBoard->Init();
-				Boards.Append(Find(EquipmentBoard, Pos));
-				Default |= MovedShapeValue;
-				break;
+				int32 Index = 0;
+				while (EquipmentBoard->IsEquip(Equipments[Index]))
+				{
+					Index++;
+				}
+				EquipmentBoard->AddEquipment(Equipments[Index], Position);
 			}
 		}
 	}
-	
-	return Boards;
+
+	return FindNumberOfCases(EquipmentBoard);
 }
 
 TArray<UEquipmentBoard*> FFindPlacementCombination::FindCombinationByRandomPool(int32 PoolNumber)
@@ -140,4 +133,12 @@ TArray<UEquipmentBoard*> FFindPlacementCombination::Find(UEquipmentBoard*& Board
 	}
 
 	return Boards;
+}
+
+TArray<UEquipmentBoard*> FFindPlacementCombination::FindNumberOfCases(UEquipmentBoard*& Board)
+{
+	
+
+
+	return { Board };
 }

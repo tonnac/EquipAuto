@@ -60,20 +60,7 @@ int32 UEquipmentBoard::CanEquip(uint64 ShapeValue) const
 	{
 		return FEquipmentUtility::InvalidPosition;	
 	}
-
-	const FIntPoint BoardSize = FEquipmentUtility::GetBoardSize();
-	for (int32 i = 0; i < BoardSize.X * BoardSize.Y; ++i)
-	{
-		const int32 Position = i / BoardSize.X * 8 + i % BoardSize.X;
-		const uint64 MovedShapeValue = ShapeValue >> Position;
-
-		if ((~BoardValue & MovedShapeValue) == MovedShapeValue)
-		{
-			return Position;
-		}
-	}
-
-	return FEquipmentUtility::InvalidPosition;
+	return FEquipmentUtility::GetCanEquipPosition(BoardValue, ShapeValue);
 }
 
 bool UEquipmentBoard::IsMaxBoard() const
