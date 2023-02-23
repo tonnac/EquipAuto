@@ -49,6 +49,11 @@ const TMap<void*, TSharedPtr<FEquipmentInfo>>& UEquipmentBoard::GetEquipments() 
 	return Equipments;
 }
 
+uint64 UEquipmentBoard::GetBoardValue() const
+{
+	return BoardValue;
+}
+
 int32 UEquipmentBoard::CanEquip(const TSharedPtr<FEquipment>& Equipment) const
 {
 	return CanEquip(Equipment->ShapeValue);

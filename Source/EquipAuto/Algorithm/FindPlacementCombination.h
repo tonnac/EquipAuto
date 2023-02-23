@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+struct FEquipmentInfo;
 class UEquipmentBoard;
 
 struct FFindPlacementCombination
@@ -12,4 +13,5 @@ private:
 	static TArray<UEquipmentBoard*> Find(UEquipmentBoard*& Board, TMap<uint64, TSet<int32>>& Pos);
 	static TArray<UEquipmentBoard*> Find(UEquipmentBoard*& Board);
 	static TArray<UEquipmentBoard*> FindNumberOfCases(UEquipmentBoard*& Board);
+	static TArray<UEquipmentBoard*> Search(UEquipmentBoard*& SourceBoard, const TMap<void*, TSharedPtr<FEquipmentInfo>>& Equipments, TSet<uint64> ShapeValues);
 };

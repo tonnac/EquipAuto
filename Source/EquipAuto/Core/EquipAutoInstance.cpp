@@ -41,10 +41,8 @@ TSharedPtr<FEquipment> UEquipAutoInstance::GetRandomEquipment() const
 {
 	const int32 Index = FMath::RandRange(0, Equipments.Num() - 1);
 
-	auto Iter = Equipments.begin();
-
 	int32 i = 0;
-	for (; Iter != Equipments.end(); ++Iter, ++i)
+	for (auto Iter = Equipments.begin(); Iter != Equipments.end(); ++Iter, ++i)
 	{
 		if (i != Index)
 		{

@@ -24,7 +24,8 @@ public:
 	int32 GetTotalStat() const;
 	int32 GetCountEquipments() const;
 	const TMap<void*, TSharedPtr<FEquipmentInfo>>& GetEquipments() const;
-	
+
+	uint64 GetBoardValue() const;
 	int32 CanEquip(const TSharedPtr<FEquipment>& Equipment) const;
 	int32 CanEquip(uint64 ShapeValue) const;
 	bool IsMaxBoard() const;

@@ -2,6 +2,7 @@
 
 #include "EquipAutoInstance.h"
 #include "EquipmentBoard.h"
+#include "EquipmentInfo.h"
 #include "EquipmentShapePool.h"
 #include "EquipmentUtility.h"
 
@@ -22,16 +23,18 @@ TArray<UEquipmentBoard*> FFindPlacementCombination::FindCombination(int32 PoolNu
 		for (int32 i = 0; i < ShapePools.Num(); ++i)
 		{
 			const uint64 ShapeValue = ShapePools[i];
-			TArray<TSharedPtr<FEquipment, ESPMode::Fast>> Equipments = *FEquipmentUtility::GetGameInstance()->
-			GetEquipments(ShapePools[i]);
-			if (const int32 Position = EquipmentBoard->CanEquip(ShapeValue); Position != FEquipmentUtility::InvalidPosition)
+			if (TArray<TSharedPtr<FEquipment, ESPMode::Fast>>* Equipments = FEquipmentUtility::GetGameInstance()->
+			GetEquipments(ShapeValue))
 			{
-				int32 Index = 0;
-				while (EquipmentBoard->IsEquip(Equipments[Index]))
+				if (const int32 Position = EquipmentBoard->CanEquip(ShapeValue); Position != FEquipmentUtility::InvalidPosition)
 				{
-					Index++;
+					int32 Index = 0;
+					while (EquipmentBoard->IsEquip((*Equipments)[Index]))
+					{
+						Index++;
+					}
+					EquipmentBoard->AddEquipment((*Equipments)[Index], Position);
 				}
-				EquipmentBoard->AddEquipment(Equipments[Index], Position);
 			}
 		}
 	}
@@ -137,8 +140,58 @@ TArray<UEquipmentBoard*> FFindPlacementCombination::Find(UEquipmentBoard*& Board
 
 TArray<UEquipmentBoard*> FFindPlacementCombination::FindNumberOfCases(UEquipmentBoard*& Board)
 {
+	const TMap<void*, TSharedPtr<FEquipmentInfo>>& Equipments = Board->GetEquipments();
+	TSet<uint64> ShapeValues;
+
+	TArray<UEquipmentBoard*> Boards;
 	
+	for (const auto& Equipment : Equipments)
+	{
+		uint64 ShapeValue = Equipment.Value->Equipment->ShapeValue;
+		if (ShapeValues.Contains(ShapeValue))
+		{
+			continue;
+		}
+		TArray<int32> CanEquipPositions = FEquipmentUtility::GetCanEquipPositions(ShapeValue, FEquipmentUtility::GetGameInstance()->GetDefaultBoardValue());
+		for (const int32 CanEquipPosition : CanEquipPositions)
+		{
+			UEquipmentBoard* NewBoard = NewObject<UEquipmentBoard>(FEquipmentUtility::GameWorld, UEquipmentBoard::StaticClass());
+			NewBoard->Init();
+			NewBoard->AddEquipment(Equipment.Value->Equipment, CanEquipPosition);
 
+			Boards.Append(Search(NewBoard, Equipments, ShapeValues));
+		}
+		ShapeValues.Emplace(ShapeValue);
+	}
+	return Boards;
+}
 
-	return { Board };
+TArray<UEquipmentBoard*> FFindPlacementCombination::Search(UEquipmentBoard*& SourceBoard,
+	const TMap<void*, TSharedPtr<FEquipmentInfo>>& Equipments, TSet<uint64> ShapeValues)
+{
+	if (SourceBoard->IsMaxBoard())
+	{
+		return { SourceBoard };
+	}
+	
+	TArray<UEquipmentBoard*> EquipmentBoards;
+	const uint64 SourceValue = SourceBoard->GetBoardValue();
+	for (const auto& Equipment : Equipments)
+	{
+		const uint64 ShapeValue = Equipment.Value->Equipment->ShapeValue;
+		if (!SourceBoard->IsEquip(Equipment.Value->Equipment) && !ShapeValues.Contains(ShapeValue))
+		{
+			TArray<int32> CanEquipPositions = FEquipmentUtility::GetCanEquipPositions(ShapeValue, SourceValue);
+			for (const int32 CanEquipPosition : CanEquipPositions)
+			{
+				UEquipmentBoard* NewBoard = NewObject<UEquipmentBoard>(FEquipmentUtility::GameWorld, UEquipmentBoard::StaticClass());
+				NewBoard->Init();
+				NewBoard->CopyBoard(SourceBoard);
+				NewBoard->AddEquipment(Equipment.Value->Equipment, CanEquipPosition);
+
+				EquipmentBoards.Append(Search(NewBoard, Equipments, ShapeValues));
+			}
+		}
+	}
+	return EquipmentBoards;
 }
